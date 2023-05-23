@@ -1,9 +1,5 @@
 package jp.ac.jec.cm0135.musicplayer;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -16,9 +12,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
 
@@ -28,6 +29,8 @@ public class SDListActivity extends AppCompatActivity {
     private RowModelAdapter adapter;
     private TextView currentPathTextView;
     private String currentPath;
+    private Button moveUpBtn;
+    private int count = 0;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -37,14 +40,14 @@ public class SDListActivity extends AppCompatActivity {
 
         currentPathTextView = findViewById(R.id.currentPathTextView);
 
+        moveUpBtn = findViewById(R.id.moveUpBtn);
+        btnStatus();
 //        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 //        adapter.add("ドラえもん音頭");
 //        adapter.add("日本電子専門学校校歌");
 
         adapter = new RowModelAdapter(this);
 //        adapter.add(new RowModel("aaa", 1111111L));
-//        adapter.add(new RowModel("bbb", 2222222L));
-//        adapter.add(new RowModel("ccc", 3333333L));
 
         File path = Environment.getExternalStorageDirectory();
         final File[] files = path.listFiles();
@@ -60,6 +63,8 @@ public class SDListActivity extends AppCompatActivity {
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                count += 1;
+                btnStatus();
                 ListView list = (ListView) parent;
                 RowModel item = (RowModel) list.getItemAtPosition(position);
                 Toast.makeText(SDListActivity.this, item.getFile().getAbsolutePath(), Toast.LENGTH_SHORT).show();
@@ -81,10 +86,12 @@ public class SDListActivity extends AppCompatActivity {
         });
 
         // 上位層へ移動するボタンのクリックリスナーを設定
-        findViewById(R.id.moveUpBtn).setOnClickListener(new View.OnClickListener() {
+        moveUpBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 上位層へ移動する
+                count -= 1;
+                btnStatus();
                 File currentDir = new File(currentPath);
                 File parentDir = currentDir.getParentFile();
                 if (parentDir != null) {
@@ -111,11 +118,18 @@ public class SDListActivity extends AppCompatActivity {
         currentPathTextView.setText(currentPath);
     }
 
+    private void btnStatus() {
+        if(count == 0) {
+            moveUpBtn.setEnabled(false);
+        }else {
+            moveUpBtn.setEnabled(true);
+        }
+    }
+
     class RowModelAdapter extends ArrayAdapter<RowModel> {
         public RowModelAdapter(@NonNull Context context) {
             super(context, R.layout.row_item);
         }
-
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             RowModel item = getItem(position);
